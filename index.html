@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Product Teardown Assistant — Vocallabs / Subspace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.6.0/dist/tabler-icons.min.css" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #ffffff;
+    --bg2: #f7f6f3;
+    --bg3: #efefeb;
+    --txt: #1a1a18;
+    --txt2: #6b6b66;
+    --txt3: #a8a8a0;
+    --border: rgba(26,26,24,0.12);
+    --border2: rgba(26,26,24,0.25);
+    --accent-vl: #1D9E75;
+    --accent-sub: #534AB7;
+    --rad: 12px;
+    --radm: 8px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1c1a;
+      --bg2: #252522;
+      --bg3: #2e2e2b;
+      --txt: #f0efe9;
+      --txt2: #9a9a92;
+      --txt3: #606059;
+      --border: rgba(240,239,233,0.1);
+      --border2: rgba(240,239,233,0.22);
+    }
+  }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg3);
+    color: var(--txt);
+    min-height: 100vh;
+    padding: 2rem 1rem 4rem;
+  }
+
+  .shell {
+    max-width: 780px;
+    margin: 0 auto;
+  }
+
+  /* ── HEADER ── */
+  .header { margin-bottom: 2.5rem; }
+  .header-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; color: var(--txt3);
+    letter-spacing: 0.14em; text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+  .header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 36px; color: var(--txt);
+    line-height: 1.15; font-weight: 400;
+  }
+  .header h1 em { font-style: italic; color: var(--txt2); }
+  .header p { font-size: 14px; color: var(--txt2); margin-top: 0.5rem; line-height: 1.65; max-width: 520px; }
+
+  /* ── SECTION TITLE ── */
+  .section-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--txt3);
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 0.5px solid var(--border);
+  }
+
+  /* ── CARD BASE ── */
+  .card {
+    background: var(--bg);
+    border: 0.5px solid var(--border);
+    border-radius: var(--rad);
+    padding: 1.25rem;
+  }
+
+  /* ── COMPANY PICKER ── */
+  .company-picker { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 2rem; }
+  .company-card {
+    border: 1.5px solid var(--border);
+    border-radius: var(--rad);
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--bg);
+    position: relative;
+  }
+  .company-card:hover { border-color: var(--border2); background: var(--bg2); }
+  .company-card.active-vl { border-color: var(--accent-vl); background: #E1F5EE; }
+  .company-card.active-sub { border-color: var(--accent-sub); background: #EEEDFE; }
+  .company-card .c-name { font-size: 15px; font-weight: 500; margin-bottom: 3px; }
+  .company-card .c-tag { font-size: 12px; color: var(--txt3); font-family: 'DM Mono', monospace; }
+  .company-card .c-desc { font-size: 12px; color: var(--txt2); margin-top: 6px; line-height: 1.5; }
+  .company-card .c-dot {
+    width: 9px; height: 9px; border-radius: 50%;
+    position: absolute; top: 13px; right: 13px;
+    background: var(--border2); transition: background 0.15s;
+  }
+  .company-card.active-vl .c-dot { background: var(--accent-vl); }
+  .company-card.active-sub .c-dot { background: var(--accent-sub); }
+  .company-card.active-vl .c-name { color: #0F6E56; }
+  .company-card.active-sub .c-name { color: #3C3489; }
+
+  /* ── PROGRESS ── */
+  .progress-wrap { margin-bottom: 2rem; }
+  .progress-bar-outer { height: 4px; background: var(--bg3); border-radius: 2px; overflow: hidden; margin-top: 8px; }
+  .progress-bar-inner { height: 100%; border-radius: 2px; background: var(--txt); transition: width 0.4s ease; }
+  .progress-label { font-size: 12px; color: var(--txt2); display: flex; justify-content: space-between; }
+
+  /* ── FRAMEWORK TABS ── */
+  .framework-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1rem; }
+  .ftab {
+    font-size: 12px; font-weight: 500;
+    padding: 5px 14px; border-radius: 20px;
+    border: 0.5px solid var(--border2);
+    background: var(--bg); cursor: pointer;
+    color: var(--txt2); font-family: 'DM Mono', monospace;
+    transition: all 0.12s;
+  }
+  .ftab:hover { background: var(--bg2); color: var(--txt); }
+  .ftab.active { background: var(--txt); color: var(--bg); border-color: var(--txt); }
+
+  .framework-panel { display: none; margin-bottom: 1.5rem; }
+  .framework-panel.visible { display: block; }
+  .fw-panel-inner {
+    background: var(--bg);
+    border: 0.5px solid var(--border);
+    border-radius: var(--rad);
+    padding: 1.25rem;
+  }
+  .fw-panel-inner h3 { font-size: 13px; font-weight: 500; margin-bottom: 1rem; color: var(--txt2); }
+  .fw-grid { display: grid; gap: 8px; }
+  .fw-grid.cols2 { grid-template-columns: 1fr 1fr; }
+  .fw-grid.cols4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+  .fw-grid.cols5 { grid-template-columns: repeat(5, 1fr); }
+  .fw-cell {
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radm);
+    padding: 0.65rem 0.75rem;
+  }
+  .fw-cell .fw-label { font-size: 10px; font-weight: 500; color: var(--txt3); margin-bottom: 5px; font-family: 'DM Mono', monospace; letter-spacing: 0.06em; text-transform: uppercase; }
+  .fw-cell textarea {
+    width: 100%; font-size: 12px;
+    border: none; background: transparent;
+    color: var(--txt); font-family: 'Outfit', sans-serif;
+    resize: none; outline: none; line-height: 1.6;
+    min-height: 58px;
+  }
+
+  /* ── PILLAR FILTERS ── */
+  .pillars { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1.25rem; }
+  .pillar {
+    font-size: 12px; padding: 4px 12px;
+    border-radius: 20px; border: 0.5px solid var(--border2);
+    background: var(--bg2); cursor: pointer; color: var(--txt2);
+    transition: all 0.12s;
+  }
+  .pillar:hover { color: var(--txt); background: var(--bg); }
+  .pillar.sel { background: var(--txt); color: var(--bg); border-color: var(--txt); }
+
+  /* ── FEEDBACK CARDS ── */
+  .feedback-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 1rem; }
+
+  .fb-card {
+    border: 0.5px solid var(--border);
+    border-radius: var(--rad);
+    background: var(--bg);
+    overflow: hidden;
+    transition: border-color 0.12s;
+  }
+  .fb-card:hover { border-color: var(--border2); }
+  .fb-card.prio-high { border-left: 3px solid #E24B4A; }
+  .fb-card.prio-med { border-left: 3px solid #EF9F27; }
+  .fb-card.prio-low { border-left: 3px solid #1D9E75; }
+
+  .fb-header {
+    display: flex; align-items: center;
+    padding: 0.85rem 1rem; gap: 10px;
+    cursor: pointer; background: var(--bg);
+    user-select: none;
+  }
+  .fb-num {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--bg2); border: 0.5px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 500; color: var(--txt3);
+    font-family: 'DM Mono', monospace; flex-shrink: 0;
+  }
+  .fb-title-input {
+    flex: 1; border: none; background: transparent;
+    font-size: 14px; font-weight: 500;
+    color: var(--txt); font-family: 'Outfit', sans-serif;
+    outline: none; cursor: text;
+  }
+  .fb-title-input::placeholder { color: var(--txt3); font-weight: 400; }
+  .fb-badge {
+    font-size: 10px; padding: 3px 9px;
+    border-radius: 12px; font-family: 'DM Mono', monospace;
+    letter-spacing: 0.04em; white-space: nowrap;
+  }
+  .badge-gtm { background: #E1F5EE; color: #0F6E56; }
+  .badge-feat { background: #EEEDFE; color: #3C3489; }
+  .badge-ux { background: #FAECE7; color: #993C1D; }
+  .badge-comp { background: #E6F1FB; color: #185FA5; }
+
+  .fb-chevron {
+    font-size: 16px; color: var(--txt3);
+    transition: transform 0.2s; flex-shrink: 0;
+  }
+  .fb-chevron.open { transform: rotate(180deg); }
+
+  .fb-del {
+    width: 24px; height: 24px;
+    border: none; background: transparent;
+    cursor: pointer; color: var(--txt3);
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 4px; font-size: 16px;
+    transition: all 0.1s; flex-shrink: 0;
+  }
+  .fb-del:hover { background: #FCEBEB; color: #E24B4A; }
+
+  .fb-body {
+    border-top: 0.5px solid var(--border);
+    padding: 1rem 1.25rem;
+    display: none;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .fb-body.open { display: flex; }
+
+  .fb-meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .fb-meta select {
+    font-size: 12px; padding: 5px 10px;
+    border: 0.5px solid var(--border);
+    border-radius: var(--radm);
+    background: var(--bg2); color: var(--txt);
+    font-family: 'DM Mono', monospace;
+    outline: none; cursor: pointer;
+  }
+
+  .fb-field label {
+    display: block;
+    font-size: 10px; font-family: 'DM Mono', monospace;
+    color: var(--txt3); letter-spacing: 0.1em;
+    text-transform: uppercase; margin-bottom: 6px;
+  }
+  .fb-field textarea {
+    width: 100%; font-size: 13px;
+    border: 0.5px solid var(--border);
+    border-radius: var(--radm);
+    padding: 9px 11px;
+    background: var(--bg2); color: var(--txt);
+    font-family: 'Outfit', sans-serif;
+    resize: vertical; min-height: 64px;
+    outline: none; line-height: 1.6;
+    transition: border-color 0.1s;
+  }
+  .fb-field textarea:focus { border-color: var(--border2); background: var(--bg); }
+
+  .complete-badge {
+    display: none; font-size: 11px;
+    padding: 2px 8px; border-radius: 12px;
+    background: #E1F5EE; color: #0F6E56;
+    font-family: 'DM Mono', monospace;
+  }
+  .fb-card.complete .complete-badge { display: inline-flex; align-items: center; gap: 4px; }
+
+  /* ── ADD BUTTON ── */
+  .add-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 9px 16px;
+    border: 0.5px dashed var(--border2);
+    border-radius: var(--radm);
+    background: transparent; cursor: pointer;
+    font-size: 13px; color: var(--txt3);
+    font-family: 'Outfit', sans-serif;
+    transition: all 0.12s; width: 100%;
+    justify-content: center;
+  }
+  .add-btn:hover { background: var(--bg2); color: var(--txt); border-color: var(--border); }
+  .add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ── EXPORT ── */
+  .export-section { margin-top: 2.5rem; }
+  .export-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .export-btn {
+    padding: 11px 16px; border-radius: var(--radm);
+    font-size: 14px; font-weight: 500;
+    font-family: 'Outfit', sans-serif;
+    cursor: pointer; transition: all 0.12s;
+    display: flex; align-items: center; gap: 7px;
+    justify-content: center;
+  }
+  .export-btn.primary { background: var(--txt); color: var(--bg); border: none; }
+  .export-btn.primary:hover { opacity: 0.85; }
+  .export-btn.sec { background: var(--bg); color: var(--txt); border: 0.5px solid var(--border2); }
+  .export-btn.sec:hover { background: var(--bg2); }
+
+  .export-out {
+    margin-top: 1rem;
+    padding: 1.25rem;
+    border: 0.5px solid var(--border);
+    border-radius: var(--rad);
+    background: var(--bg);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px; line-height: 1.85;
+    color: var(--txt2);
+    white-space: pre-wrap;
+    max-height: 480px; overflow-y: auto;
+    display: none;
+  }
+  .export-out.visible { display: block; }
+
+  /* ── CHECKLIST ── */
+  .checklist {
+    background: var(--bg);
+    border: 0.5px solid var(--border);
+    border-radius: var(--rad);
+    padding: 1.25rem;
+    margin-bottom: 2rem;
+  }
+  .checklist h3 { font-size: 13px; font-weight: 500; margin-bottom: 0.75rem; color: var(--txt2); }
+  .cl-item { display: flex; align-items: flex-start; gap: 8px; padding: 5px 0; }
+  .cl-check {
+    width: 16px; height: 16px; border-radius: 4px;
+    border: 0.5px solid var(--border2); background: var(--bg2);
+    flex-shrink: 0; margin-top: 1px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; color: var(--accent-vl);
+    transition: all 0.12s;
+  }
+  .cl-check.done { background: #E1F5EE; border-color: var(--accent-vl); }
+  .cl-text { font-size: 13px; color: var(--txt2); line-height: 1.5; }
+  .cl-text.done { color: var(--txt3); text-decoration: line-through; }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed; bottom: 1.5rem; right: 1.5rem;
+    background: var(--txt); color: var(--bg);
+    padding: 9px 18px; border-radius: var(--radm);
+    font-size: 13px; opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none; z-index: 999;
+    font-family: 'Outfit', sans-serif;
+  }
+  .toast.show { opacity: 1; }
+
+  @media (max-width: 600px) {
+    .company-picker { grid-template-columns: 1fr; }
+    .fw-grid.cols4, .fw-grid.cols5 { grid-template-columns: 1fr 1fr; }
+    .export-btns { grid-template-columns: 1fr; }
+    .header h1 { font-size: 28px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-tag">Product Intern Assignment · May 2026</div>
+    <h1>Product Teardown<br><em>Assistant</em></h1>
+  </div>
+
+  <!-- COMPANY PICKER -->
+  <div class="section-title">Choose your company</div>
+  <div class="company-picker">
+    <div class="company-card" id="card-vl" onclick="pickCompany('vl')">
+      <div class="c-dot"></div>
+      <div class="c-name">Vocallabs.ai</div>
+      <div class="c-tag">AI VOICE AGENTS</div>
+      <div class="c-desc">AI voice agents automating business calls with human-like fluency. Sales, support & booking flows.</div>
+    </div>
+    <div class="company-card" id="card-sub" onclick="pickCompany('sub')">
+      <div class="c-dot"></div>
+      <div class="c-name">Subspace.money</div>
+      <div class="c-tag">SUBSCRIPTION FINANCE</div>
+      <div class="c-desc">Subscribe to anything, delivered in minutes. Subscriptions · Sharing · Rentals. Rs.36.5 Cr ARR FY25.</div>
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span id="prog-text">0 of 5 feedbacks completed</span>
+      <span id="prog-pct">0%</span>
+    </div>
+    <div class="progress-bar-outer">
+      <div class="progress-bar-inner" id="prog-bar" style="width:0%"></div>
+    </div>
+  </div>
+
+  <!-- EVALUATOR CHECKLIST -->
+  <div class="section-title">Evaluator checklist</div>
+  <div class="checklist">
+    <h3>What moves forward vs. doesn't</h3>
+    <div id="checklist-items">
+      <div class="cl-item"><div class="cl-check" id="cl0"></div><div class="cl-text" id="clt0">Company selected</div></div>
+      <div class="cl-item"><div class="cl-check" id="cl1"></div><div class="cl-text" id="clt1">All 5 feedback points added</div></div>
+      <div class="cl-item"><div class="cl-check" id="cl2"></div><div class="cl-text" id="clt2">Feedbacks span at least 3 different pillars</div></div>
+      <div class="cl-item"><div class="cl-check" id="cl3"></div><div class="cl-text" id="clt3">Every feedback has a specific Observed note</div></div>
+      <div class="cl-item"><div class="cl-check" id="cl4"></div><div class="cl-text" id="clt4">Every feedback has a Problem defined</div></div>
+      <div class="cl-item"><div class="cl-check" id="cl5"></div><div class="cl-text" id="clt5">Every feedback has an actionable Solution</div></div>
+    </div>
+  </div>
+
+  <!-- FRAMEWORK -->
+  <div class="section-title">Analysis framework (scratchpad)</div>
+  <div class="framework-tabs">
+    <button class="ftab" onclick="toggleFw('swot', this)">SWOT</button>
+    <button class="ftab" onclick="toggleFw('porter', this)">Porter's Five Forces</button>
+    <button class="ftab" onclick="toggleFw('7ps', this)">7Ps</button>
+  </div>
+
+  <div class="framework-panel" id="fw-swot">
+    <div class="fw-panel-inner">
+      <h3>SWOT Analysis</h3>
+      <div class="fw-grid cols2">
+        <div class="fw-cell"><div class="fw-label">Strengths</div><textarea placeholder="What does this company do uniquely well?"></textarea></div>
+        <div class="fw-cell"><div class="fw-label">Weaknesses</div><textarea placeholder="Where do they fall short vs. competitors?"></textarea></div>
+        <div class="fw-cell"><div class="fw-label">Opportunities</div><textarea placeholder="Market gaps, underserved segments?"></textarea></div>
+        <div class="fw-cell"><div class="fw-label">Threats</div><textarea placeholder="Competitors, regulations, user behaviour shifts?"></textarea></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-panel" id="fw-porter">
+    <div class="fw-panel-inner">
+      <h3>Porter's Five Forces</h3>
+      <div class="fw-grid cols5">
+        <div class="fw-cell"><div class="fw-label">Rivalry</div><textarea placeholder="Intensity of competition"></textarea></div>
+        <div class="fw-cell"><div class="fw-label">New entrants</div><textarea placeholder="Barriers to entry"></textarea></div>
+        <div class="fw-cell"><div class="fw-label">Substitutes</div><textarea placeholder="Alt solutions users have"></textarea></div>
+        <div class="fw-cell"><div class="fw-label">Buyer power</div><textarea placeholder="Customer leverage"></textarea></div>
+        <div class="fw-cell"><div class="fw-label">Supplier power</div><textarea placeholder="Vendor / tech leverage"></textarea></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-panel" id="fw-7ps">
+    <div class="fw-panel-inner">
+      <h3>7Ps Marketing Mix</h3>
+      <div class="fw-grid cols4">
+        <div class="fw-cell"><div class="fw-label">Product</div><textarea placeholder="Core offering"></textarea></div>
+        <div class="fw-cell"><div class="fw-label">Price</div><textarea placeholder="Pricing model & tiers"></textarea></div>
+        <div class="fw-cell"><div class="fw-label">Place</div><textarea placeholder="Distribution channels"></textarea></div>
+        <div class="fw-cell"><div class="fw-label">Promotion</div><textarea placeholder="GTM & marketing tactics"></textarea></div>
+        <div class="fw-cell"><div class="fw-label">People</div><textarea placeholder="Team, culture, talent"></textarea></div>
+        <div class="fw-cell"><div class="fw-label">Process</div><textarea placeholder="How value is delivered"></textarea></div>
+        <div class="fw-cell"><div class="fw-label">Physical</div><textarea placeholder="Tangible evidence of quality"></textarea></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEEDBACK SECTION -->
+  <div class="section-title" style="margin-top:2rem;">5 Feedback points</div>
+  <div style="margin-bottom:1rem;">
+    <span style="font-size:12px;color:var(--txt2);">Filter by pillar:</span>
+    <div class="pillars" style="margin-top:8px;margin-bottom:0;">
+      <div class="pillar sel" data-p="all" onclick="filterPillar('all',this)">All</div>
+      <div class="pillar" data-p="gtm" onclick="filterPillar('gtm',this)">GTM & ICPs</div>
+      <div class="pillar" data-p="comp" onclick="filterPillar('comp',this)">Competitors</div>
+      <div class="pillar" data-p="feat" onclick="filterPillar('feat',this)">Features</div>
+      <div class="pillar" data-p="ux" onclick="filterPillar('ux',this)">UX</div>
+    </div>
+  </div>
+
+  <div class="feedback-list" id="fb-list"></div>
+  <button class="add-btn" onclick="addFeedback()" id="add-btn">
+    <i class="ti ti-plus" aria-hidden="true"></i> Add feedback point
+  </button>
+
+  <!-- EXPORT -->
+  <div class="export-section">
+    <div class="section-title">Export report</div>
+    <div class="export-btns">
+      <button class="export-btn primary" onclick="exportReport()">
+        <i class="ti ti-file-text" aria-hidden="true"></i> Generate report
+      </button>
+      <button class="export-btn sec" onclick="copyReport()">
+        <i class="ti ti-copy" aria-hidden="true"></i> Copy to clipboard
+      </button>
+    </div>
+    <div class="export-out" id="export-out"></div>
+  </div>
+
+</div><!-- end shell -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── State ──
+  let company = null;
+  let activeFw = null;
+  let activeFilter = 'all';
+  let feedbacks = [];
+  let fbOpen = {};
+
+  const PILLARS = { gtm: 'GTM & ICPs', comp: 'Competitors', feat: 'Features', ux: 'UX' };
+  const BADGE_CLS = { gtm: 'badge-gtm', feat: 'badge-feat', ux: 'badge-ux', comp: 'badge-comp' };
+  const PRIO_LABELS = { high: 'High priority', med: 'Medium', low: 'Low priority' };
+
+  // ── Company ──
+  function pickCompany(c) {
+    company = c;
+    document.getElementById('card-vl').className = 'company-card' + (c === 'vl' ? ' active-vl' : '');
+    document.getElementById('card-sub').className = 'company-card' + (c === 'sub' ? ' active-sub' : '');
+    updateChecklist();
+    if (feedbacks.length === 0) addFeedback();
+  }
+
+  // ── Frameworks ──
+  function toggleFw(id, el) {
+    const panel = document.getElementById('fw-' + id);
+    document.querySelectorAll('.ftab').forEach(t => t.classList.remove('active'));
+    if (activeFw === id) {
+      panel.classList.remove('visible');
+      activeFw = null;
+    } else {
+      document.querySelectorAll('.framework-panel').forEach(p => p.classList.remove('visible'));
+      panel.classList.add('visible');
+      el.classList.add('active');
+      activeFw = id;
+    }
+  }
+
+  // ── Filter ──
+  function filterPillar(p, el) {
+    activeFilter = p;
+    document.querySelectorAll('.pillar').forEach(x => x.classList.remove('sel'));
+    el.classList.add('sel');
+    renderAll();
+  }
+
+  // ── Add feedback ──
+  function addFeedback() {
+    if (feedbacks.length >= 5) { showToast('Maximum 5 feedback points'); return; }
+    const id = Date.now();
+    feedbacks.push({ id, title: '', pillar: 'gtm', priority: 'med', observed: '', problem: '', solution: '' });
+    fbOpen[id] = true;
+    renderAll();
+    updateProgress();
+    updateChecklist();
+  }
+
+  function deleteFeedback(id) {
+    feedbacks = feedbacks.filter(f => f.id !== id);
+    delete fbOpen[id];
+    renderAll();
+    updateProgress();
+    updateChecklist();
+  }
+
+  function toggleFbOpen(id) {
+    fbOpen[id] = !fbOpen[id];
+    const body = document.getElementById('fbbody-' + id);
+    const chev = document.getElementById('fbchev-' + id);
+    if (body) body.classList.toggle('open', fbOpen[id]);
+    if (chev) chev.classList.toggle('open', fbOpen[id]);
+  }
+
+  function updateField(id, field, val) {
+    const fb = feedbacks.find(f => f.id === id);
+    if (fb) {
+      fb[field] = val;
+      updateProgress();
+      updateChecklist();
+      // update badge on pillar change
+      if (field === 'pillar') {
+        const badge = document.getElementById('fbbadge-' + id);
+        if (badge) {
+          badge.textContent = PILLARS[val];
+          badge.className = 'fb-badge ' + (BADGE_CLS[val] || '');
+        }
+      }
+      // update priority class
+      if (field === 'priority') {
+        const card = document.getElementById('fbcard-' + id);
+        if (card && isComplete(fb)) {
+          card.className = 'fb-card prio-' + val;
+        }
+      }
+      // complete badge
+      const cbadge = document.getElementById('fbcomplete-' + id);
+      const card = document.getElementById('fbcard-' + id);
+      if (cbadge && card) {
+        if (isComplete(fb)) {
+          cbadge.style.display = 'inline-flex';
+          card.className = 'fb-card complete prio-' + fb.priority;
+        } else {
+          cbadge.style.display = 'none';
+          card.className = 'fb-card';
+        }
+      }
+    }
+  }
+
+  function isComplete(fb) {
+    return fb.title.trim() && fb.observed.trim() && fb.problem.trim() && fb.solution.trim();
+  }
+
+  // ── Progress ──
+  function updateProgress() {
+    const done = feedbacks.filter(isComplete).length;
+    const pct = Math.round((done / 5) * 100);
+    document.getElementById('prog-text').textContent = done + ' of 5 feedbacks completed';
+    document.getElementById('prog-pct').textContent = pct + '%';
+    document.getElementById('prog-bar').style.width = pct + '%';
+  }
+
+  // ── Checklist ──
+  function updateChecklist() {
+    const checks = [
+      !!company,
+      feedbacks.length >= 5,
+      new Set(feedbacks.map(f => f.pillar)).size >= 3,
+      feedbacks.length > 0 && feedbacks.every(f => f.observed.trim()),
+      feedbacks.length > 0 && feedbacks.every(f => f.problem.trim()),
+      feedbacks.length > 0 && feedbacks.every(f => f.solution.trim()),
+    ];
+    checks.forEach((ok, i) => {
+      const c = document.getElementById('cl' + i);
+      const t = document.getElementById('clt' + i);
+      if (c) { c.className = 'cl-check' + (ok ? ' done' : ''); c.innerHTML = ok ? '<i class="ti ti-check"></i>' : ''; }
+      if (t) { t.className = 'cl-text' + (ok ? ' done' : ''); }
+    });
+  }
+
+  // ── Render ──
+  function renderAll() {
+    const list = document.getElementById('fb-list');
+    const visible = activeFilter === 'all' ? feedbacks : feedbacks.filter(f => f.pillar === activeFilter);
+
+    list.innerHTML = '';
+    visible.forEach((fb, idx) => {
+      const open = fbOpen[fb.id];
+      const complete = isComplete(fb);
+      const cardCls = 'fb-card' + (complete ? ' complete prio-' + fb.priority : '');
+      const bcls = BADGE_CLS[fb.pillar] || '';
+
+      const card = document.createElement('div');
+      card.className = cardCls;
+      card.id = 'fbcard-' + fb.id;
+
+      card.innerHTML = `
+        <div class="fb-header" onclick="toggleFbOpen(${fb.id})">
+          <div class="fb-num">${idx + 1}</div>
+          <input class="fb-title-input"
+            placeholder="Feedback title — e.g. No pricing page on site"
+            value="${esc(fb.title)}"
+            onclick="event.stopPropagation()"
+            oninput="updateField(${fb.id},'title',this.value)" />
+          <span class="fb-badge ${bcls}" id="fbbadge-${fb.id}">${PILLARS[fb.pillar]}</span>
+          <span class="complete-badge" id="fbcomplete-${fb.id}" style="${complete ? 'display:inline-flex' : 'display:none'}">
+            <i class="ti ti-check" aria-hidden="true"></i> Done
+          </span>
+          <i class="ti ti-chevron-down fb-chevron ${open ? 'open' : ''}" id="fbchev-${fb.id}" aria-hidden="true"></i>
+          <button class="fb-del" onclick="event.stopPropagation();deleteFeedback(${fb.id})" aria-label="Delete feedback">
+            <i class="ti ti-x" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div class="fb-body ${open ? 'open' : ''}" id="fbbody-${fb.id}">
+          <div class="fb-meta">
+            <select onchange="updateField(${fb.id},'pillar',this.value)" onclick="event.stopPropagation()">
+              ${Object.entries(PILLARS).map(([k,v]) => `<option value="${k}" ${fb.pillar===k?'selected':''}>${v}</option>`).join('')}
+            </select>
+            <select onchange="updateField(${fb.id},'priority',this.value)" onclick="event.stopPropagation()">
+              ${Object.entries(PRIO_LABELS).map(([k,v]) => `<option value="${k}" ${fb.priority===k?'selected':''}>${v}</option>`).join('')}
+            </select>
+          </div>
+          <div class="fb-field">
+            <label>(a) Observed — specific screen, copy or flow you saw</label>
+            <textarea placeholder="E.g. The onboarding flow skips pricing entirely — no tier comparison visible before sign-up..." oninput="updateField(${fb.id},'observed',this.value)">${esc(fb.observed)}</textarea>
+          </div>
+          <div class="fb-field">
+            <label>(b) Problem — real user or business pain</label>
+            <textarea placeholder="E.g. Users can't assess ROI before committing — causes high drop-off at trial activation..." oninput="updateField(${fb.id},'problem',this.value)">${esc(fb.problem)}</textarea>
+          </div>
+          <div class="fb-field">
+            <label>(c) Ship instead — specific, actionable solution</label>
+            <textarea placeholder="E.g. Add a sticky pricing drawer accessible from the nav + add a calculator widget showing cost per call saved..." oninput="updateField(${fb.id},'solution',this.value)">${esc(fb.solution)}</textarea>
+          </div>
+        </div>`;
+      list.appendChild(card);
+    });
+
+    const addBtn = document.getElementById('add-btn');
+    if (feedbacks.length >= 5) {
+      addBtn.disabled = true;
+      addBtn.title = 'Maximum 5 feedback points';
+    } else {
+      addBtn.disabled = false;
+      addBtn.title = '';
+    }
+  }
+
+  function esc(s) {
+    return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── Export ──
+  let reportText = '';
+
+  function exportReport() {
+    if (!company) { showToast('Please select a company first'); return; }
+    if (feedbacks.length === 0) { showToast('Add at least one feedback point first'); return; }
+    const co = company === 'vl' ? 'Vocallabs.ai' : 'Subspace.money';
+    const date = new Date().toLocaleDateString('en-IN', { day:'numeric', month:'long', year:'numeric' });
+
+    let out = '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+    out += `PRODUCT TEARDOWN — ${co}\n`;
+    out += `Date: ${date}\n`;
+    out += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n';
+
+    feedbacks.forEach((fb, i) => {
+      out += `FEEDBACK ${i + 1}  ·  ${PILLARS[fb.pillar]}  ·  ${PRIO_LABELS[fb.priority]}\n`;
+      out += `${fb.title || '(untitled)'}\n`;
+      out += '─'.repeat(48) + '\n\n';
+      out += `(a) OBSERVED\n${fb.observed || '—'}\n\n`;
+      out += `(b) PROBLEM\n${fb.problem || '—'}\n\n`;
+      out += `(c) SHIP INSTEAD\n${fb.solution || '—'}\n\n`;
+      out += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n';
+    });
+
+    const pillarsUsed = [...new Set(feedbacks.map(f => PILLARS[f.pillar]))].join(', ');
+    out += `Pillars covered: ${pillarsUsed}\n`;
+    out += `Completion: ${feedbacks.filter(isComplete).length}/5 fully filled\n`;
+
+    reportText = out;
+    const el = document.getElementById('export-out');
+    el.textContent = out;
+    el.classList.add('visible');
+    showToast('Report generated!');
+  }
+
+  function copyReport() {
+    if (!reportText) { exportReport(); }
+    if (!reportText) return;
+    navigator.clipboard.writeText(reportText)
+      .then(() => showToast('Copied to clipboard!'))
+      .catch(() => showToast('Select the text below and copy manually'));
+  }
+
+  // ── Toast ──
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2400);
+  }
+
+  // ── Init ──
+  renderAll();
+  updateProgress();
+  updateChecklist();
+</script>
+</body>
+</html>
